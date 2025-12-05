@@ -1,6 +1,6 @@
 {
   "name": "@swatchtime/clocks",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "description": "Swatch Internet Time embeddable clocks (library)",
   "main": "dist/clocks.umd.js",
   "module": "dist/clocks.esm.js",
