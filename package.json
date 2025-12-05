@@ -1,0 +1,22 @@
+{
+  "name": "@swatchtime/clocks",
+  "version": "1.0.0",
+  "description": "Swatch Internet Time embeddable clocks (library)",
+  "main": "src/clocks.js",
+  "module": "src/clocks.js",
+  "files": ["src"],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/swatchtime/swatch-clocks.git"
+  },
+  "author": "Ken Dawson <ken@kendawson.online>",
+  "license": "MIT",
+  "scripts": {
+    "build": "echo \"Add build step (Rollup) later\"",
+    "test": "echo \"no tests\""
+  },
+  "keywords": ["swatch","internet-time","clocks","swatchtime"],
+  "engines": {
+    "node": ">=12"
+  }
+}
