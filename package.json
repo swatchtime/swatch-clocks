@@ -11,7 +11,7 @@
   ],
   "repository": {
     "type": "git",
-    "url": "https://github.com/swatchtime/swatch-clocks.git"
+    "url": "git+https://github.com/swatchtime/swatch-clocks.git"
   },
   "author": "Ken Dawson <ken@kendawson.online>",
   "license": "MIT",
