@@ -1,8 +1,8 @@
 // ----------------------------------------------------
 // Swatch Internet Time: embeddable clocks 
 // Created: 11/28/25 by <ken@kendawson.online>
-// Last updated: 12/4/25
-// Version: 1.0.0
+// Last updated: 12/5/25
+// Version: 0.9.4
 // ----------------------------------------------------
 
 // Swiss flag SVG logo
