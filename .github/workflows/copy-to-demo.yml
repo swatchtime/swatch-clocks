@@ -1,0 +1,90 @@
+name: Sync vendor files to demo
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'src/clocks.js'
+      - 'src/clocks.css'
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    name: Compare and sync vendor files to demo repo
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out current repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check out demo repository
+        uses: actions/checkout@v4
+        with:
+          repository: swatchtime/swatch-clocks-demo
+          path: demo
+          # Requires a personal access token (repo scope) saved as DEMO_REPO_PAT
+          token: ${{ secrets.DEMO_REPO_PAT }}
+          fetch-depth: 0
+
+      - name: Compare src and demo vendor files
+        id: compare
+        run: |
+          set -euo pipefail
+          mkdir -p demo/vendor
+
+          # default: assume different unless files exist and match
+          DIFFERENT=0
+
+          if [ -f src/clocks.js ] && [ -f demo/vendor/clocks.js ]; then
+            if cmp -s src/clocks.js demo/vendor/clocks.js; then
+              echo "js_equal=true" >> $GITHUB_OUTPUT
+            else
+              echo "js_equal=false" >> $GITHUB_OUTPUT
+              DIFFERENT=1
+            fi
+          else
+            echo "js_equal=false" >> $GITHUB_OUTPUT
+            DIFFERENT=1
+          fi
+
+          if [ -f src/clocks.css ] && [ -f demo/vendor/clocks.css ]; then
+            if cmp -s src/clocks.css demo/vendor/clocks.css; then
+              echo "css_equal=true" >> $GITHUB_OUTPUT
+            else
+              echo "css_equal=false" >> $GITHUB_OUTPUT
+              DIFFERENT=1
+            fi
+          else
+            echo "css_equal=false" >> $GITHUB_OUTPUT
+            DIFFERENT=1
+          fi
+
+          if [ "$DIFFERENT" -eq 1 ]; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Sync updated files to demo repo
+        if: steps.compare.outputs.changed == 'true'
+        run: |
+          set -euo pipefail
+          cp src/clocks.js demo/vendor/clocks.js
+          cp src/clocks.css demo/vendor/clocks.css
+
+          cd demo
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add vendor/clocks.js vendor/clocks.css || true
+          git commit -m "chore(demo): sync vendor clocks from swatch-clocks @${{ github.sha }}" || echo "No changes to commit"
+          git push origin main
+
+      - name: No-op when nothing changed
+        if: steps.compare.outputs.changed == 'false'
+        run: |
+          echo "No vendor changes detected; nothing to do."
