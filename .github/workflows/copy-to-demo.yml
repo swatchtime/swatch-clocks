@@ -6,6 +6,7 @@ on:
     paths:
       - 'src/clocks.js'
       - 'src/clocks.css'
+  workflow_dispatch: {}
 
 permissions:
   contents: write
