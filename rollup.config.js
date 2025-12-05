@@ -8,12 +8,12 @@ export default [
   {
     input: 'src/index.js',
     output: { file: 'dist/clocks.esm.js', format: 'es', sourcemap: true },
-    plugins: [resolve(), commonjs(), postcss({ extract: true })]
+    plugins: [resolve(), commonjs(), postcss({ extract: 'clocks.css', minimize: true })]
   },
   // UMD build (minified for browser)
   {
     input: 'src/index.js',
-    output: { file: 'dist/clocks.umd.js', format: 'umd', name: 'SwatchClocks', sourcemap: true, exports: 'named' },
-    plugins: [resolve(), commonjs(), postcss({ extract: true }), terser()]
+    output: { file: 'dist/clocks.js', format: 'umd', name: 'SwatchClocks', sourcemap: true, exports: 'named' },
+    plugins: [resolve(), commonjs(), postcss({ extract: 'clocks.css', minimize: true }), terser()]
   }
 ];

@@ -1,6 +1,6 @@
 {
   "name": "@swatchtime/clocks",
-  "version": "0.9.2",
+  "version": "0.9.3",
   "description": "Swatch Internet Time embeddable clocks (library)",
   "main": "dist/clocks.umd.js",
   "module": "dist/clocks.esm.js",
@@ -16,7 +16,7 @@
   "author": "Ken Dawson <ken@kendawson.online>",
   "license": "MIT",
   "scripts": {
-    "build": "rollup -c",
+    "build": "rollup -c && node scripts/postbuild.js",
     "dev": "rollup -c -w",
     "prepublishOnly": "npm run build",
     "test": "echo \"no tests\""
