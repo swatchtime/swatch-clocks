@@ -1,4 +1,4 @@
-name: Sync vendor files to demo
+name: Sync built artifacts to demo examples
 
 on:
   push:
@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   sync:
-    name: Compare and sync vendor files to demo repo
+    name: Build and sync dist artifacts to demo repo (examples)
     runs-on: ubuntu-latest
 
     steps:
@@ -21,6 +21,17 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install deps and build
+        run: |
+          set -euo pipefail
+          npm ci
+          npm run build
 
       - name: Check out demo repository
         uses: actions/checkout@v4
@@ -31,61 +42,37 @@ jobs:
           token: ${{ secrets.DEMO_REPO_PAT }}
           fetch-depth: 0
 
-      - name: Compare src and demo vendor files
-        id: compare
+      - name: Sync built dist files into demo examples and legacy vendor
+        id: sync
         run: |
           set -euo pipefail
-          mkdir -p demo/vendor
 
-          # default: assume different unless files exist and match
-          DIFFERENT=0
+          # Ensure target vendor dirs exist (examples)
+          mkdir -p demo/examples/preact-auto/public/vendor
+          mkdir -p demo/examples/preact-manual/public/vendor
 
-          if [ -f src/clocks.js ] && [ -f demo/vendor/clocks.js ]; then
-            if cmp -s src/clocks.js demo/vendor/clocks.js; then
-              echo "js_equal=true" >> $GITHUB_OUTPUT
-            else
-              echo "js_equal=false" >> $GITHUB_OUTPUT
-              DIFFERENT=1
-            fi
-          else
-            echo "js_equal=false" >> $GITHUB_OUTPUT
-            DIFFERENT=1
-          fi
+          # Copy recommended distribution artifacts:
+          # - ESM bundle (used by Preact/Vite examples)
+          # - UMD bundle (legacy demo via <script> tag)
+          # - CSS
+          cp -f dist/clocks.esm.js demo/examples/preact-auto/public/vendor/clocks.esm.js
+          cp -f dist/clocks.esm.js demo/examples/preact-manual/public/vendor/clocks.esm.js
+          cp -f dist/clocks.css demo/examples/preact-auto/public/vendor/clocks.css
+          cp -f dist/clocks.css demo/examples/preact-manual/public/vendor/clocks.css
 
-          if [ -f src/clocks.css ] && [ -f demo/vendor/clocks.css ]; then
-            if cmp -s src/clocks.css demo/vendor/clocks.css; then
-              echo "css_equal=true" >> $GITHUB_OUTPUT
-            else
-              echo "css_equal=false" >> $GITHUB_OUTPUT
-              DIFFERENT=1
-            fi
-          else
-            echo "css_equal=false" >> $GITHUB_OUTPUT
-            DIFFERENT=1
-          fi
-
-          if [ "$DIFFERENT" -eq 1 ]; then
-            echo "changed=true" >> $GITHUB_OUTPUT
-          else
-            echo "changed=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Sync updated files to demo repo
-        if: steps.compare.outputs.changed == 'true'
-        run: |
-          set -euo pipefail
-          cp src/clocks.js demo/vendor/clocks.js
-          cp src/clocks.css demo/vendor/clocks.css
+          # (legacy demo/vendor is deprecated and no longer copied)
 
           cd demo
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
 
-          git add vendor/clocks.js vendor/clocks.css || true
-          git commit -m "chore(demo): sync vendor clocks from swatch-clocks @${{ github.sha }}" || echo "No changes to commit"
+          # only add example vendor folders (legacy vendor directory removed)
+          git add examples/preact-auto/public/vendor || true
+          git add examples/preact-manual/public/vendor || true
+
+          git commit -m "chore(demo): sync dist artifacts (clocks) from swatch-clocks @${{ github.sha }}" || echo "No changes to commit"
           git push origin main
 
-      - name: No-op when nothing changed
-        if: steps.compare.outputs.changed == 'false'
+      - name: Done
         run: |
-          echo "No vendor changes detected; nothing to do."
+          echo "Sync complete. Demo examples updated with built artifacts."

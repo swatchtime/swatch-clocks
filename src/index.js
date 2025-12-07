@@ -1,18 +1,6 @@
 import './clocks.css';
-import './clocks.js';
-import './webcomponent.js';
-
-// `src/clocks.js` is an IIFE that populates globals on `window` when run in a browser.
-// We expose those globals as named exports for ESM consumers and also attach a
-// runtime-friendly object to `window.SwatchClocks` for UMD/browser usage.
-
-const getGlobal = (name, fallback) => (typeof window !== 'undefined' && window[name]) ? window[name] : fallback;
-
-export const getPreset = getGlobal('getPreset', () => undefined);
-export const getPresets = getGlobal('getPresets', () => []);
-export const getPresetNormalized = getGlobal('getPresetNormalized', () => undefined);
-export const buildOptionsForElement = getGlobal('buildOptionsForElement', null);
-export const Clock = getGlobal('Clock', null);
+import { getPreset, getPresets, getPresetNormalized, buildOptionsForElement, Clock } from './clocks.js';
+import SwatchClockElement from './webcomponent.js';
 
 // Helper: initialize all `div.internetTime` and `<swatch-clock>` places on the page
 export function autoInit(root = document) {
@@ -29,11 +17,7 @@ export function autoInit(root = document) {
 		} catch (e) { /* ignore per-element errors */ }
 	});
 
-	// custom elements: <swatch-clock data-style="...">
-	const custom = Array.from((root || document).querySelectorAll('swatch-clock'));
-	custom.forEach(el => {
-		// the webcomponent will auto-mount itself; nothing to do here, but leave hook for future
-	});
+	// custom elements: <swatch-clock data-style="..."> — webcomponent auto-mounts
 }
 
 // When running in the browser attach a runtime helper object to window and auto-init
@@ -57,4 +41,5 @@ if (typeof window !== 'undefined') {
 	}
 }
 
-// No default export — this module only provides named exports to keep Rollup happy.
+// Re-export core runtime helpers for ESM consumers
+export { getPreset, getPresets, getPresetNormalized, buildOptionsForElement, Clock, SwatchClockElement };

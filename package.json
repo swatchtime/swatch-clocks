@@ -1,14 +1,22 @@
 {
   "name": "@swatchtime/clocks",
-  "version": "0.9.4",
-  "description": "Swatch Internet Time embeddable clocks (library)",
-  "main": "dist/clocks.umd.js",
+  "version": "0.9.5",
+  "description": "Swatch Internet Time embeddable Javascript clocks (library)",
+  "main": "dist/clocks.js",
   "module": "dist/clocks.esm.js",
   "files": [
     "dist",
     "README.md",
     "LICENSE"
   ],
+  "exports": {
+    ".": {
+      "import": "./dist/clocks.esm.js",
+      "require": "./dist/clocks.js",
+      "default": "./dist/clocks.js"
+    },
+    "./package.json": "./package.json"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/swatchtime/swatch-clocks.git"
@@ -19,6 +27,8 @@
     "build": "rollup -c && node scripts/postbuild.js",
     "dev": "rollup -c -w",
     "prepublishOnly": "npm run build",
+    "demo:copy": "node scripts/copy-dist-to-demo.js",
+    "demo:copy:sh": "bash scripts/copy-dist-to-demo.sh",
     "test": "echo \"no tests\""
   },
   "keywords": [

@@ -1,9 +1,9 @@
-// ----------------------------------------------------
-// Swatch Internet Time: embeddable clocks 
+// ------------------------------------------------------------------
+// Swatch Internet Time embeddable Javascript clocks (library)
 // Created: 11/28/25 by <ken@kendawson.online>
-// Last updated: 12/5/25
-// Version: 0.9.4
-// ----------------------------------------------------
+// Last updated: 12/6/25
+// Version: 0.9.5
+// ------------------------------------------------------------------
 
 // Swiss flag SVG logo
 const FLAG_SVG = `<?xml version="1.0" encoding="UTF-8"?>
@@ -1134,24 +1134,27 @@ function buildOptionsForElement(el, norm) {
 // accidentally mutating library state. Consumers should call
 // `getPreset(name)` or `getPresets()`; the internal `presets` object
 // remains private to the library.
-window.getPreset = function getPreset(name) {
+function getPreset(name) {
   const p = presets[name];
   if (!p) return null;
   if (typeof structuredClone === 'function') return structuredClone(p);
   return JSON.parse(JSON.stringify(p));
-};
+}
+window.getPreset = getPreset;
 
-window.getPresets = function getPresets() {
+function getPresets() {
   if (typeof structuredClone === 'function') return structuredClone(presets);
   return JSON.parse(JSON.stringify(presets));
-};
+}
+window.getPresets = getPresets;
 
 // Return a normalized (flat) preset suitable for passing to Clock
-window.getPresetNormalized = function getPresetNormalized(name) {
+function getPresetNormalized(name) {
   try {
     return normalizePreset(name);
   } catch (e) { return null; }
-};
+}
+window.getPresetNormalized = getPresetNormalized;
 
 // -------------------------------------------------
 // Swatch Internet Time functions
@@ -1197,7 +1200,7 @@ document.addEventListener('visibilitychange', () => {
 
 // Add a public initializer so host frameworks and SPAs can initialize
 // dynamically-inserted `.internetTime` elements.
-window.initInternetTime = function initInternetTime(root = document) {
+function initInternetTime(root = document) {
   const container = (root && root.querySelectorAll) ? root : document;
   const inited = [];
   container.querySelectorAll('.internetTime').forEach(el => {
@@ -1215,10 +1218,11 @@ window.initInternetTime = function initInternetTime(root = document) {
     }
   });
   return inited;
-};
+}
+window.initInternetTime = initInternetTime;
 
 // Remove references and optionally remove DOM contents for a root.
-window.destroyInternetTime = function destroyInternetTime(root = document, opts = { removeDom: false }) {
+function destroyInternetTime(root = document, opts = { removeDom: false }) {
   const container = (root && root.querySelectorAll) ? root : document;
   container.querySelectorAll('.internetTime').forEach(el => {
     if (el.clock) {
@@ -1229,11 +1233,12 @@ window.destroyInternetTime = function destroyInternetTime(root = document, opts 
       try { delete el.clock; } catch (e) { el.clock = undefined; }
     }
   });
-};
+}
+window.destroyInternetTime = destroyInternetTime;
 
 // Lazy initializer using IntersectionObserver. Returns the observer so caller
 // can disconnect later. Options: { root, rootMargin, threshold }
-window.initInternetTimeLazy = function initInternetTimeLazy(options = {}) {
+function initInternetTimeLazy(options = {}) {
   const root = options.root || document;
   const rootMargin = options.rootMargin || '200px';
   const threshold = typeof options.threshold !== 'undefined' ? options.threshold : 0.01;
@@ -1258,5 +1263,22 @@ window.initInternetTimeLazy = function initInternetTimeLazy(options = {}) {
   });
   return observer;
 };
+window.initInternetTimeLazy = initInternetTimeLazy;
 
 startSwatchClock();
+
+// Ensure common runtime symbols are available on `window` for UMD and
+// ESM consumers that expect globals. This keeps backward compatibility
+// with script-tag usage and helps bundlers that read runtime globals.
+try {
+  if (typeof window !== 'undefined') {
+    if (typeof window.Clock === 'undefined') window.Clock = Clock;
+    if (typeof window.buildOptionsForElement === 'undefined') window.buildOptionsForElement = buildOptionsForElement;
+    if (typeof window.presets === 'undefined') window.presets = presets;
+    if (typeof window.normalizePreset === 'undefined') window.normalizePreset = normalizePreset;
+  }
+} catch (e) { /* ignore */ }
+
+// Export named bindings for ESM consumers (Vite, Preact, bundlers)
+// so they can `import { Clock, buildOptionsForElement } from '@swatchtime/clocks'`.
+export { Clock, getPreset, getPresets, getPresetNormalized, normalizePreset, buildOptionsForElement, initInternetTime, destroyInternetTime, initInternetTimeLazy, startSwatchClock, stopSwatchClock, presets };
